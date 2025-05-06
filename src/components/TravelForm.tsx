@@ -234,38 +234,54 @@ const TravelForm: React.FC = () => {
         }
       });
 
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.error || 'Form submission failed');
+      let errorMessage = 'Failed to submit form';
+      try {
+        const data = await response.json();
+        if (!response.ok) {
+          errorMessage = data.error || data.details || errorMessage;
+          throw new Error(errorMessage);
+        }
+
+        setIsSubmitted(true);
+        setSnackbar({
+          open: true,
+          message: 'Form submitted successfully!',
+          severity: 'success',
+        });
+
+        // Reset form
+        setFormData({
+          name: '',
+          email: '',
+          phone: '',
+          dateOfTravel: null,
+          source: '',
+          reviewScreenshot: null,
+          ticket: null,
+        });
+        
+        // Reset file inputs
+        const fileInputs = document.querySelectorAll('input[type="file"]');
+        fileInputs.forEach((input) => {
+          (input as HTMLInputElement).value = '';
+        });
+      } catch (error) {
+        console.error('Form submission error:', {
+          status: response.status,
+          statusText: response.statusText,
+          error: error instanceof Error ? error.message : 'Unknown error'
+        });
+        setSnackbar({
+          open: true,
+          message: error instanceof Error ? error.message : errorMessage,
+          severity: 'error',
+        });
       }
-
-      setIsSubmitted(true);
-      setSnackbar({
-        open: true,
-        message: 'Form submitted successfully!',
-        severity: 'success',
-      });
-
-      // Reset form
-      setFormData({
-        name: '',
-        email: '',
-        phone: '',
-        dateOfTravel: null,
-        source: '',
-        reviewScreenshot: null,
-        ticket: null,
-      });
-      
-      // Reset file inputs
-      const fileInputs = document.querySelectorAll('input[type="file"]');
-      fileInputs.forEach((input) => {
-        (input as HTMLInputElement).value = '';
-      });
     } catch (error) {
+      console.error('Network or parsing error:', error);
       setSnackbar({
         open: true,
-        message: error instanceof Error ? error.message : 'Failed to submit form. Please try again.',
+        message: 'Network error: Please check your connection and try again',
         severity: 'error',
       });
     } finally {
