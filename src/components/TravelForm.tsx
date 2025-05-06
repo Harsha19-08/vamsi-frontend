@@ -225,9 +225,13 @@ const TravelForm: React.FC = () => {
         }
       });
 
-      const response = await fetch(`${import.meta.env.VITE_API_URL}/api/submit-form`, {
+      const response = await fetch('https://vamsi-saraswatitravels.vercel.app/api/submit-form', {
         method: 'POST',
         body: formDataToSend,
+        credentials: 'include',
+        headers: {
+          'Accept': 'application/json',
+        }
       });
 
       if (!response.ok) {
